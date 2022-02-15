@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -13,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
 
@@ -30,10 +32,17 @@ public class Acteur {
 	@Column(nullable=false)
 	private String prenom;
 
-	@ManyToMany(mappedBy = "acteurs")
+	@ManyToMany(mappedBy = "acteurs", fetch=FetchType.LAZY)
 	private List<Film> films = new ArrayList<>();
 	
 	private int age;
+	
+	@PreRemove
+	private void preRemove() {
+		for(Film f : this.films) {
+			f.getActeurs().remove(this);
+		}
+	}
 	
 	public Acteur() {
 	}
@@ -43,6 +52,7 @@ public class Acteur {
 		this.prenom=prenom;
 		this.age=age;
 	}
+	
 
 	public String getNom() {
 		return nom;
@@ -84,5 +94,21 @@ public class Acteur {
 		this.films = films;
 	}
 	
+	public void addFilm(Film film) {
+		this.films.add(film);
+		film.getActeurs().add(this);
+	}
 	
+	public void removeFilm(Film film) {
+		this.films.remove(film);
+		film.getActeurs().remove(this);
+	}
+	
+	@Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Acteur) {
+            return this.id == ((Acteur) obj).id;
+        }
+        return false;
+    }
 }

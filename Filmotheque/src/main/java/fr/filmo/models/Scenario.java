@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -21,8 +23,7 @@ public class Scenario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@OnDelete(action=OnDeleteAction.CASCADE)
+	@OneToOne(mappedBy="scenario", fetch=FetchType.LAZY)
 	@JoinColumn(name="idFilm")
 	private Film film;
 	
@@ -32,6 +33,13 @@ public class Scenario {
 	@Column(nullable=false)
 	private String description;
 
+	@PreRemove
+	private void preRemove() {
+		if(this.film !=null) {
+			this.film.setScenario(null);
+		}
+	}
+	
 	public Scenario() {
 	}
 	

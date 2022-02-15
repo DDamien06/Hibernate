@@ -3,6 +3,7 @@ package fr.filmo.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -37,7 +38,7 @@ public class Film {
 	@JoinColumn(name="idScenario", nullable = false)
 	private Scenario scenario;
 
-	@ManyToMany
+	@ManyToMany(cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name="jouer",
 				joinColumns = @JoinColumn(name="idFilm"),
 				inverseJoinColumns = @JoinColumn(name="idActeur"))
@@ -127,11 +128,36 @@ public class Film {
 		this.genre = genre;
 	}
 
+	
+	public List<Acteur> getActeurs() {
+		return acteurs;
+	}
+
+	public void setActeurs(List<Acteur> acteurs) {
+		this.acteurs = acteurs;
+	}
+
 	@Override
 	public String toString() {
 		return titre;
 	}
 	
+	public void removeActeur(Acteur acteur) {
+		this.acteurs.remove(acteur);
+		acteur.getFilms().remove(this);
+	}
 	
+	public void addActeur(Acteur acteur) {
+		this.acteurs.add(acteur);
+		acteur.getFilms().add(this);
+	}
+	
+	@Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Film) {
+            return this.id == ((Film) obj).id;
+        }
+        return false;
+    }
 	
 }
